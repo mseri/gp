@@ -3,9 +3,10 @@ open Owl
 
 let default_tmp_root =
   match Unix.stat "/dev/shm" with
-  | {st_kind = S_DIR; _} -> "/dev/shm"
+  | { st_kind = S_DIR; _ } -> "/dev/shm"
   | _ -> "/tmp"
   | exception Unix.Unix_error (Unix.ENOENT, _, _) -> "/tmp"
+
 
 type prms =
   { tmp_root : string
@@ -72,6 +73,20 @@ type output =
 let svg ?(font = "Helvetica,12") ?(size = 600, 400) ?other_term_opts file_name =
   { term = { term = "svg"; font = Some font; size = Some size; other = other_term_opts }
   ; file = Some (ensure_ext "svg" file_name)
+  ; pause = None
+  ; post_action = None
+  }
+
+
+let gif ?(font = "Helvetica,12") ?(size = 600, 400) ?animation ?other_term_opts file_name
+  =
+  let other_term_opts =
+    match List.filter_map (fun x -> x) [ animation; other_term_opts ] with
+    | [] -> None
+    | l -> Some (String.concat " " l)
+  in
+  { term = { term = "gif"; font = Some font; size = Some size; other = other_term_opts }
+  ; file = Some (ensure_ext "gif" file_name)
   ; pause = None
   ; post_action = None
   }
